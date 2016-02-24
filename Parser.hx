@@ -1,7 +1,5 @@
 package;
 
-import flash.events.EventDispatcher;
-
 class Parser
 {
 	public static var NAME : String = "LEVEL_PARSER";
@@ -29,15 +27,17 @@ class Parser
 		<haxeflag name="--macro" value="include('classPath')" />
 		
 		in the Application.xml file
+		
+		We return an array of ParseElement which is an interface, allowing us to implement it in any class we need
 	**/
-	public function Parse(xml : Xml) : Array<Parser>
+	public function Parse(xml : Xml) : Array<ParseElement>
 	{
 		var parser : Dynamic;
 		var resClass : Class<Dynamic>;
 		var classPath, className : String;
-		var parsers, auxParsers : Array<Parser>;
+		var parsers, auxParsers : Array<ParseElement>;
 		
-		parsers = new Array<Parser>();
+		parsers = new Array<ParseElement>();
 		
 		try
 		{	
@@ -45,7 +45,7 @@ class Parser
 			{
 				if (e.nodeType == Xml.Element)
 				{
-					className = e.nodeName.substring(0, 1).toUpperCase() + e.nodeName.substring(1, e.nodeName.length).toLowerCase();
+					className = e.get("classname") == null ? e.nodeName.substring(0, 1).toUpperCase() + e.nodeName.substring(1, e.nodeName.length).toLowerCase() : e.get("classname");
 					classPath = xml.get("classpath") == null ? classesPath : xml.get("classpath");
 					resClass = Type.resolveClass(classPath + "." + className);
 					
@@ -57,8 +57,6 @@ class Parser
 							auxParsers = cast(parser, Parser).Parse(e);
 							for (p in auxParsers)
 								parsers.push(p);
-							
-							parsers.push(parser);
 						}
 					}
 				}
