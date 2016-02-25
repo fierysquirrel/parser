@@ -1,6 +1,6 @@
 package;
 
-class Parser
+class Parser<E>
 {
 	public static var NAME : String = "LEVEL_PARSER";
 	
@@ -28,16 +28,17 @@ class Parser
 		
 		in the Application.xml file
 		
-		We return an array of ParseElement which is an interface, allowing us to implement it in any class we need
+		We return an array of E which could be any time of element
 	**/
-	public function Parse(xml : Xml) : Array<ParseElement>
+	public function Parse(xml : Xml) : Array<E>
 	{
-		var parser : Dynamic;
+		var parserInstance : Dynamic;
+		var parser : Parser<E>;
 		var resClass : Class<Dynamic>;
 		var classPath, className : String;
-		var parsers, auxParsers : Array<ParseElement>;
+		var elements, auxElements : Array<E>;
 		
-		parsers = new Array<ParseElement>();
+		elements = new Array<E>();
 		
 		try
 		{	
@@ -51,12 +52,13 @@ class Parser
 					
 					if (resClass != null)
 					{
-						parser = Type.createInstance(resClass, []);
-						if (Std.is(parser, Parser))
+						parserInstance = Type.createInstance(resClass, [classesPath]);
+						if (Std.is(parserInstance, Parser))
 						{
-							auxParsers = cast(parser, Parser).Parse(e);
-							for (p in auxParsers)
-								parsers.push(p);
+							parser = cast parserInstance;
+							auxElements = parser.Parse(e);
+							for (p in auxElements)
+								elements.push(p);
 						}
 					}
 				}
@@ -67,6 +69,6 @@ class Parser
 			trace(e);
 		}
 		
-		return parsers;
+		return elements;
 	}
 }
